@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#163b2b">
+  <meta name="description" content="Bloom Radar HK：香港 Pikmin Bloom 蘑菇手動追蹤與 Detector 候選地點地圖。">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Bloom Radar HK">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+  <title>Bloom Radar HK</title>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand-mark" aria-hidden="true">🍄</div>
+    <div class="brand-copy"><h1>Bloom Radar HK</h1><p>香港蘑菇追蹤 · 試用版</p></div>
+    <button id="installHelpBtn" class="icon-button" aria-label="安裝說明" title="安裝到主畫面">＋</button>
+  </header>
+
+  <main>
+    <section class="notice" role="note">
+      <strong>試用版資料提示</strong>
+      <p>本工具沒有連接 Pikmin Bloom 遊戲。蘑菇資料由你手動新增；Detector 候選點來自 OpenStreetMap，並非遊戲內已確認的蘑菇、花苗或飾品結果。</p>
+    </section>
+
+    <section class="stats-grid" aria-label="摘要">
+      <div class="stat-card"><span>已記錄蘑菇</span><strong id="mushroomCount">0</strong></div>
+      <div class="stat-card"><span>戰鬥中</span><strong id="battleCount">0</strong></div>
+      <div class="stat-card"><span>追蹤中</span><strong id="watchCount">0</strong></div>
+    </section>
+
+    <section class="map-section panel">
+      <div class="section-heading"><div><h2>香港地圖</h2><p>移動／縮放地圖以查看地點</p></div><button id="locateBtn" class="secondary-button">定位我</button></div>
+      <div id="map" aria-label="香港互動地圖"></div>
+      <div class="map-legend"><span><i class="legend-dot mushroom-dot"></i>手動記錄蘑菇</span><span><i class="legend-dot candidate-dot"></i>OSM 候選地點</span></div>
+      <div class="map-actions">
+        <button id="addMushroomBtn" class="primary-button">＋ 新增蘑菇</button>
+        <button id="loadCandidatesBtn" class="secondary-button">載入畫面範圍候選點</button>
+      </div>
+      <p id="mapMessage" class="small-message" aria-live="polite">提示：按「新增蘑菇」，再點擊地圖選擇位置。</p>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading"><div><h2>蘑菇清單</h2><p>你記錄的位置與狀態</p></div><button id="exportBtn" class="text-button">匯出</button></div>
+      <div class="filter-row">
+        <label class="field compact-field"><span>地區／種類搜尋</span><input id="searchInput" type="search" placeholder="例如：中環、巨大蘑菇"></label>
+        <label class="field compact-field"><span>狀態</span><select id="statusFilter"><option value="all">全部</option><option value="available">空閒／可挑戰</option><option value="battle">戰鬥中</option><option value="respawn">預計重生</option><option value="unknown">未知</option></select></label>
+      </div>
+      <div id="mushroomList" class="item-list"><div class="empty-state">暫時沒有蘑菇記錄。可在地圖上新增第一個位置。</div></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading"><div><h2>Detector 候選地點</h2><p>公開地理資料，只供尋找方向</p></div><span id="candidateCount" class="count-pill">0 個</span></div>
+      <div class="candidate-categories" id="candidateCategories">
+        <label><input type="checkbox" value="restaurant" checked> 餐廳</label>
+        <label><input type="checkbox" value="park" checked> 公園／花園</label>
+        <label><input type="checkbox" value="station" checked> 車站</label>
+        <label><input type="checkbox" value="shop" checked> 商店／購物中心</label>
+        <label><input type="checkbox" value="tourism" checked> 景點</label>
+      </div>
+      <p class="small-message">載入目前地圖可見範圍內的 OSM 地點。公共 Overpass 服務繁忙時可能需要稍後再試。</p>
+      <div id="candidateList" class="item-list"><div class="empty-state">尚未載入候選地點。</div></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading"><div><h2>備份及資料管理</h2><p>資料只儲存在這個瀏覽器</p></div></div>
+      <div class="button-row"><button id="importBtn" class="secondary-button">匯入 JSON 備份</button><button id="clearBtn" class="danger-button">清除本機資料</button></div>
+      <input id="importFile" type="file" accept="application/json,.json" hidden>
+      <p class="small-message">換裝置、清除 Safari 網站資料或使用私密瀏覽可能會令本機記錄消失。請定期匯出備份。</p>
+    </section>
+  </main>
+
+  <footer><p>Bloom Radar HK · 非官方粉絲工具</p><p>地圖 © OpenStreetMap contributors · 蘑菇資料需自行核實</p></footer>
+
+  <dialog id="mushroomDialog">
+    <form id="mushroomForm" method="dialog">
+      <div class="dialog-heading"><h2 id="dialogTitle">新增蘑菇</h2><button type="button" class="close-button" id="closeDialogBtn" aria-label="關閉">×</button></div>
+      <p id="selectedCoords" class="coords-note">請先在地圖選擇位置。</p>
+      <input id="editId" type="hidden">
+      <input id="latitude" type="hidden"><input id="longitude" type="hidden">
+      <label class="field"><span>位置名稱（必填）</span><input id="mushroomName" required maxlength="80" placeholder="例如：中環某公園附近"></label>
+      <label class="field"><span>蘑菇種類</span><select id="mushroomType"><option>未知</option><option>普通蘑菇</option><option>巨大蘑菇</option><option>活動蘑菇</option><option>稀有蘑菇</option><option>其他</option></select></label>
+      <label class="field"><span>狀態</span><select id="mushroomStatus"><option value="unknown">未知／未確認</option><option value="available">空閒／可挑戰</option><option value="battle">戰鬥中</option><option value="respawn">預計重生</option></select></label>
+      <label class="field"><span>參戰人數（選填）</span><input id="participants" type="number" min="0" max="100" placeholder="未知可留空"></label>
+      <label class="field"><span>預計重生時間（選填）</span><input id="respawnAt" type="datetime-local"></label>
+      <label class="field"><span>備註／資料來源</span><textarea id="mushroomNotes" rows="2" maxlength="500" placeholder="例如：自己在遊戲內看到；截圖時間……"></textarea></label>
+      <div class="dialog-actions"><button type="button" id="cancelDialogBtn" class="secondary-button">取消</button><button type="submit" class="primary-button">儲存記錄</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="installDialog">
+    <div class="dialog-heading"><h2>加入 iPhone／iPad 主畫面</h2><button type="button" class="close-button" id="closeInstallBtn" aria-label="關閉">×</button></div>
+    <ol class="install-steps"><li>用 Safari 開啟已部署嘅 Bloom Radar HK 網址。</li><li>按「分享」圖示。</li><li>選擇「加入主畫面」。</li><li>按「加入」完成。</li></ol>
+    <p class="small-message">請使用 HTTPS 網址。此試用版沒有伺服器推送；倒數提醒只會在頁面開啟時檢查。</p>
+  </dialog>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>
