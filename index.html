@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#163b2b">
+  <meta name="description" content="Bloom Radar HK：根據 OpenStreetMap 地點資料推算 Pikmin Bloom 附近可能的 Decor 偵測點。">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Bloom Radar HK">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+  <title>Bloom Radar HK｜偵測器地圖</title>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand-mark" aria-hidden="true">🌱</div>
+    <div class="brand-copy"><h1>Bloom Radar HK</h1><p>Pikmin Bloom · Decor 偵測器地圖</p></div>
+    <button id="locateBtn" class="icon-button" title="重新定位" aria-label="重新定位">◎</button>
+  </header>
+  <main>
+    <section class="notice" role="note">
+      <strong>預測資料，並非遊戲內確認結果</strong>
+      <p>此地圖使用 OpenStreetMap（OSM）公開地點資料，按地點類型推算可能的 Decor 類別。它不會連接 Pikmin Bloom／Niantic，也不能確認遊戲實際偵測結果、花苗是否存在或 Decor 是否已集齊。請以遊戲內 Detector 為準。</p>
+    </section>
+
+    <section class="panel controls">
+      <div class="section-heading"><div><h2>附近 1 km</h2><p id="locationStatus" aria-live="polite">正在準備定位…</p></div><button id="refreshBtn" class="primary-button">重新搜尋</button></div>
+      <div class="search-row">
+        <label class="field"><span>搜尋地點／城市</span><input id="placeSearch" type="search" placeholder="例如：中環、尖沙咀、Taipei"></label>
+        <button id="searchBtn" class="secondary-button">搜尋</button>
+      </div>
+      <div class="filter-row">
+        <label class="field"><span>Decor 類別</span><select id="categoryFilter"><option value="all">全部可能類別</option></select></label>
+        <label class="field"><span>排序</span><select id="sortFilter"><option value="distance">距離由近至遠</option><option value="name">名稱 A–Z</option><option value="category">按類別</option></select></label>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><span>候選地點</span><strong id="pointCount">0</strong></div>
+        <div class="stat-card"><span>可能類別</span><strong id="categoryCount">0</strong></div>
+        <div class="stat-card"><span>搜尋半徑</span><strong>1 km</strong></div>
+      </div>
+    </section>
+
+    <section class="map-section panel">
+      <div class="section-heading"><div><h2>偵測點地圖</h2><p>藍點為你的位置；彩色點為 OSM 推算候選點</p></div></div>
+      <div id="map" aria-label="附近 Decor 偵測點地圖"></div>
+      <div class="map-legend">
+        <span><i class="legend-dot user-dot"></i>目前位置</span>
+        <span><i class="legend-dot candidate-dot"></i>預測候選點</span>
+        <span><i class="legend-dot radius-dot"></i>1 km 範圍</span>
+      </div>
+      <p id="mapMessage" class="small-message" aria-live="polite">允許定位後，會自動搜尋附近地點。</p>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading"><div><h2>附近候選清單</h2><p>每個地點列出由 OSM 標籤推算的可能 Decor 類別</p></div><span id="resultCount" class="count-pill">0 個</span></div>
+      <div id="candidateList" class="item-list"><div class="empty-state">正在取得位置並載入候選地點…</div></div>
+    </section>
+
+    <section class="panel limitations">
+      <h2>資料來源及限制</h2>
+      <ul>
+        <li>地點資料：OpenStreetMap Overpass API；地圖底圖：OpenStreetMap。</li>
+        <li>Decor 類別由 OSM 的 amenity、shop、leisure、tourism、railway 等標籤推算，並非遊戲官方分類資料庫。</li>
+        <li>OSM 可能缺少、過時或標記錯誤的地點；部分遊戲地點可能不在 OSM 中。</li>
+        <li>定位只在此裝置瀏覽器內使用；網站不會把你的位置上傳到自家伺服器。</li>
+        <li>Overpass 公共服務繁忙時可能限流；若查詢失敗，請稍後再試。</li>
+      </ul>
+      <p class="small-message">© OpenStreetMap contributors · 非官方粉絲工具</p>
+    </section>
+  </main>
+  <footer><p>Bloom Radar HK · 非官方粉絲工具</p><p>所有候選結果均需在 Pikmin Bloom 遊戲內核實。</p></footer>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>
